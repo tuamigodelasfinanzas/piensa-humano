@@ -1,6 +1,6 @@
 // Miniatura 1280x720 con el estilo fijo del canal (content/estilo.json → miniatura).
 // Regla de tercios: la escena ocupa dos tercios y en el tercio libre van 2-3 palabras grandes, siempre con la misma fuente y tamaño:
-// Playfair Display 900; las líneas van en blanco y la última, en negro sobre un bloque naranja. Debajo, la firma HUMANO.
+// Montserrat 900; las líneas van en blanco con contorno negro y la última, en negro sobre un bloque naranja. Debajo, la firma HUMANO.
 // video.json → miniatura: { prompt, texto: ["LÍNEA 1", "LÍNEA 2"], lado: "izquierda" | "derecha" }   (lado = dónde va el texto)
 // Uso: node src/thumb.mjs content/videos/<id> <carpeta-imagenes> <salida.jpg>
 import fs from 'node:fs';
@@ -14,7 +14,7 @@ const S = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/estilo.json'), 'ut
 // una imagen base elegida a mano (content/videos/<id>/miniatura.jpg) tiene prioridad sobre la generada
 const src = [path.join(videoDir, 'miniatura.jpg'), path.join(imgDir, 'miniatura.jpg')].find(f => fs.existsSync(f));
 if (!src) throw new Error('Falta miniatura.jpg en ' + videoDir + ' o ' + imgDir);
-const font = path.join(ROOT, 'node_modules/@fontsource/playfair-display/files/playfair-display-latin-900-normal.woff');
+const font = path.join(ROOT, 'node_modules/@fontsource/montserrat/files/montserrat-latin-900-normal.woff');
 
 const m = meta.miniatura || {};
 const lines = (Array.isArray(m.texto) ? m.texto : [m.texto]).filter(Boolean).map(l => String(l).toUpperCase());
@@ -47,7 +47,7 @@ lines.forEach((l, i) => {
   const y = top + i * lh + (last ? pad : 0);
   vf.push(last
     ? text(l, size, S.color_bloque_texto, y, `box=1:boxcolor=0x${S.color_bloque.slice(1)}:boxborderw=${pad}`)
-    : text(l, size, S.color, y, 'shadowcolor=black@0.85:shadowx=0:shadowy=8'));
+    : text(l, size, S.color, y, `borderw=${S.contorno}:bordercolor=black:shadowcolor=black@0.85:shadowx=0:shadowy=8`));
 });
 const yFirma = top + lines.length * lh + pad + firmaGap;
 vf.push(text(S.firma.split('').join(' '), firmaSize, S.color, yFirma, 'shadowcolor=black@0.8:shadowx=0:shadowy=3'));

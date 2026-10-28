@@ -22,7 +22,7 @@ class Quota extends Error {}
 async function cloudflare(img) {
   const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${process.env.CF_ACCOUNT_ID}/ai/run/${CF_MODEL}`, {
     method: 'POST', headers: { Authorization: `Bearer ${process.env.CF_API_TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt: img.prompt, steps: 8, seed: img.seed }),
+    body: JSON.stringify({ prompt: img.prompt, steps: 8 }),
   });
   const j = await r.json().catch(() => ({}));
   if (r.status === 429 || /neuron|limit|quota/i.test(JSON.stringify(j.errors || ''))) throw new Quota(JSON.stringify(j.errors || r.status));

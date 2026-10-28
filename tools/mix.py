@@ -37,7 +37,9 @@ def main(plan_file, out):
             # duck under the voice: envelope of the voice, smoothed
             env = np.abs(voice)
             k = int(0.25 * SR)
-            env = np.convolve(env, np.ones(k) / k, mode='same')
+            c = np.concatenate([[0.0], np.cumsum(env, dtype=np.float64)])  # media móvil en O(n): con vídeos de 30 min np.convolve tarda horas
+            lo = np.clip(np.arange(n) - k // 2, 0, n); hi = np.clip(np.arange(n) + k // 2, 0, n)
+            env = ((c[hi] - c[lo]) / k).astype(np.float32)
             duck = 1.0 - 0.6 * np.clip(env / 0.03, 0, 1)
             fade = np.ones(n)
             f = int(1.0 * SR)

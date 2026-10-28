@@ -8,8 +8,7 @@
     "preview": "PH_VOICE=false IMG_PROVIDER=placeholder node src/images.mjs content/videos/001-suficiente out/001/img && PH_VOICE=false node src/render.mjs content/videos/001-suficiente out/001/img out/001"
   },
   "dependencies": {
-    "@fontsource/anton": "^5.3.0",
-    "@fontsource/cinzel": "^5.3.0",
-    "@fontsource/oswald": "^5.0.0"
+    "@fontsource/oswald": "^5.0.0",
+    "@fontsource/playfair-display": "^5.3.0"
   }
 }

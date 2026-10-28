@@ -24,22 +24,18 @@
   "miniatura": {
     "_doc": "Estilo fijo de todas las miniaturas (src/thumb.mjs). Regla de tercios: escena en dos tercios, 2-3 palabras en el otro. Las palabras no repiten ninguna del título.",
     "prompt": "hyper-detailed cinematic digital painting, epic dramatic lighting, rim light, saturated warm orange and gold against deep teal night, sharp details, one protagonist with a strong emotional expression, {escena}, the protagonist and scene fill the {lado_escena} two-thirds of the frame, the {lado_texto} third is darker sky and blurred lights kept clean for text, no text, no letters, no logos, no watermark",
-    "fuente": "Anton (npm @fontsource/anton, licencia OFL)",
-    "tamano": 170,
-    "interlineado": 1.1,
-    "contorno": 7,
-    "margen": 40,
-    "ancho_columna": 500,
+    "fuente": "Playfair Display 900 en mayúsculas (npm @fontsource/playfair-display, licencia OFL)",
+    "tamano": 124,
+    "interlineado": 1,
+    "margen": 56,
+    "ancho_columna": 520,
     "max_palabras": 3,
-    "colores": [
-      "#FFE100",
-      "#FFFFFF"
-    ],
+    "color": "#FFFFFF",
+    "color_bloque": "#FF5A1F",
+    "color_bloque_texto": "#111111",
+    "bloque_margen": 14,
     "firma": "HUMANO",
-    "firma_tamano": 26,
-    "firma_color": "#F2EDE4",
-    "firma_fuente": "Cinzel 700 (npm @fontsource/cinzel, OFL)",
-    "trazo": "assets/miniatura/trazo.png (rojo #D6141A, bajo la primera línea)",
-    "oscurecer": 0.55
+    "firma_tamano": 24,
+    "oscurecer": 0.6
   }
 }

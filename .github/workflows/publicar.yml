@@ -1,7 +1,7 @@
 name: Publicar
 
-# Cada día a las 08:00 UTC renderiza lo que content/calendario.json publica en los próximos 2 días (hora de Madrid): el vídeo del domingo
-# queda listo el viernes. Crea la release v-<fecha>-<id> con video.mp4, miniatura.jpg, subtitulos.srt y la ficha de publicación
+# Cada día a las 08:00 UTC renderiza lo que content/calendario.json publica en los próximos 2 días (hora de Madrid): el vídeo
+# queda listo dos días antes. Crea la release v-<fecha>-<id> con video.mp4, miniatura.jpg, subtitulos.srt y la ficha de publicación
 # (título, descripción con capítulos, etiquetas y pasos) como texto de la release, y avisa por Telegram si hay secrets TELEGRAM_*.
 # La subida a YouTube es a mano (Make Core no admite archivos de más de 100 MB): unos 5 minutos siguiendo la ficha.
 on:

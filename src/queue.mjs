@@ -1,5 +1,5 @@
 // Imprime las filas del calendario que hay que renderizar ahora: las que se publican en los próximos 2 días (hora de Madrid)
-// y aún no están hechas. Así el vídeo del domingo está listo el viernes, con margen para subirlo y revisarlo.
+// y aún no están hechas. Así cada vídeo está listo dos días antes, con margen para subirlo y revisarlo.
 // Uso: node src/queue.mjs <estado.json> [YYYY-MM-DD,... para forzar esas fechas]
 import fs from 'node:fs';
 

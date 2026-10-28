@@ -1,6 +1,6 @@
 name: Miniatura (candidatos)
 
-# Temporal: genera imágenes base para la miniatura del piloto con Cloudflare Workers AI y las guarda en tmp-miniatura/ de esta rama.
+# Temporal: genera imágenes base para la miniatura del piloto con Pollinations (gratis, sin clave) y las guarda en tmp-miniatura/ de esta rama.
 on:
   push:
     branches: [claude/project-thread-su1p3u]
@@ -24,16 +24,14 @@ jobs:
         run: |
           node --input-type=module -e '
           import fs from "node:fs";
-          const base = JSON.parse(fs.readFileSync("content/estilo.json","utf8")).prompt_base;
           const prompts = JSON.parse(fs.readFileSync("tmp-miniatura/prompts.json","utf8"));
-          for (const [i, p] of prompts.entries()) for (const k of [1, 2]) {
-            const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${process.env.CF_ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell`, {
-              method: "POST", headers: { Authorization: `Bearer ${process.env.CF_API_TOKEN}`, "Content-Type": "application/json" },
-              body: JSON.stringify({ prompt: `${p}, ${base}`, steps: 8 }) });
-            const j = await r.json().catch(() => ({}));
-            if (!j.result?.image) { console.log(i, k, r.status, JSON.stringify(j.errors || j).slice(0, 300)); continue; }
-            fs.writeFileSync(`tmp-miniatura/c${i + 1}-${k}.jpg`, Buffer.from(j.result.image, "base64"));
-            console.log("ok", i + 1, k);
+          for (const [i, p] of prompts.entries()) for (const seed of [11, 23, 37, 41]) {
+            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=1920&height=1080&model=flux&nologo=true&seed=${seed}`;
+            for (let t = 0; t < 3; t++) {
+              const r = await fetch(url).catch(e => ({ ok: false, status: String(e) }));
+              if (r.ok && /image/.test(r.headers.get("content-type") || "")) { fs.writeFileSync(`tmp-miniatura/c${i + 1}-${seed}.jpg`, Buffer.from(await r.arrayBuffer())); console.log("ok", i + 1, seed); break; }
+              console.log("fallo", i + 1, seed, r.status); await new Promise(z => setTimeout(z, 15000));
+            }
           }'
       - name: Guardar
         run: |

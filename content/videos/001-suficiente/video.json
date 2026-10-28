@@ -1,0 +1,10 @@
+{
+  "id": "001-suficiente",
+  "titulo": "Lo consigues todo y a los tres días ya no te importa",
+  "miniatura": {
+    "prompt": "an open empty cardboard box lit from above in a dark room, a hand still holding its edge, dramatic chiaroscuro",
+    "texto": "¿Y AHORA QUÉ?"
+  },
+  "etiquetas": ["filosofía", "Schopenhauer", "Epicuro", "Séneca", "Girard", "Rousseau", "consumismo", "insatisfacción", "deseo", "felicidad", "redes sociales", "comparación"],
+  "descripcion": "Lo deseas durante semanas. Lo consigues. Y a los tres días ya estás mirando otra cosa.\n\nEn este ensayo exploramos por qué ya nada parece suficiente: el péndulo del deseo de Schopenhauer, el deseo que aprendemos de los demás según Rousseau y Girard, una economía que vive del siguiente deseo y la frontera que Epicuro y Séneca proponían trazar.\n\n{capitulos}\n\nFuentes\n- Arthur Schopenhauer, El mundo como voluntad y representación (1819), libro IV, §56-58.\n- Arthur Schopenhauer, Parerga y paralipómena (1851), Aforismos sobre la sabiduría de la vida, cap. III.\n- Jean-Jacques Rousseau, Discurso sobre el origen y los fundamentos de la desigualdad entre los hombres (1755), segunda parte.\n- René Girard, Mentira romántica y verdad novelesca (1961).\n- Epicuro, Carta a Meneceo.\n- Séneca, Cartas a Lucilio, carta 2.\n- Brickman, P. y Campbell, D. T. (1971). Hedonic relativism and planning the good society.\n- Brickman, P., Coates, D. y Janoff-Bulman, R. (1978). Lottery winners and accident victims: Is happiness relative? Journal of Personality and Social Psychology, 36(8).\n- Festinger, L. (1954). A theory of social comparison processes. Human Relations, 7(2).\n\nLa única cita textual es la de Séneca; el resto son paráfrasis e interpretaciones nuestras.\n\nImágenes generadas con IA. Voz sintética."
+}

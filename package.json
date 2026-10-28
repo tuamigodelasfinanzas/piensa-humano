@@ -1,0 +1,13 @@
+{
+  "name": "piensa-humano",
+  "private": true,
+  "type": "module",
+  "description": "HUMANO (@PiensaHumano): ensayos de filosofía en vídeo, generados y publicados de forma automática.",
+  "scripts": {
+    "plan": "node src/parse.mjs content/videos/001-suficiente",
+    "preview": "PH_VOICE=false IMG_PROVIDER=placeholder node src/images.mjs content/videos/001-suficiente out/001/img && PH_VOICE=false node src/render.mjs content/videos/001-suficiente out/001/img out/001"
+  },
+  "dependencies": {
+    "@fontsource/oswald": "^5.0.0"
+  }
+}

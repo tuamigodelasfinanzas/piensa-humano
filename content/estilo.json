@@ -1,0 +1,13 @@
+{
+  "_doc": "Estilo fijo del canal. El prompt base se añade a cada imagen para que todas parezcan del mismo mundo.",
+  "voz": { "voice": "es-ES-AlvaroNeural", "rate": "-10%", "pitch": "-2Hz" },
+  "palabras_por_segundo": 2.3,
+  "pausa": 2.0,
+  "hueco_parrafo": 0.45,
+  "segundos_por_imagen": 10,
+  "prompt_base": "cinematic film still, 35mm film grain, moody low-key lighting, deep blacks, muted ochre and amber palette with one warm accent, shallow depth of field, photorealistic, no text, no letters, no watermark",
+  "prompt_grabado": "old engraving illustration, etched lines, aged paper texture, sepia tones, no text, no watermark",
+  "variantes": ["", "wide establishing shot", "close-up detail", "different angle, side view", "over the shoulder view", "high angle view"],
+  "musica": "assets/music/fondo.wav",
+  "volumen_musica": 0.10
+}

@@ -1,0 +1,68 @@
+name: Imágenes
+
+# Cada día a las 05:00 UTC genera las imágenes que faltan de los próximos vídeos del calendario (o del piloto si el calendario está vacío)
+# y las guarda en la release img-<id> de este repo. Con Cloudflare Workers AI (gratis) caben unas 160 al día: un vídeo de ~120 imágenes
+# queda listo en uno o dos días. Secrets: CF_ACCOUNT_ID + CF_API_TOKEN (o GEMINI_API_KEY, de pago). Variable opcional: IMG_PROVIDER.
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+    inputs:
+      video:
+        description: "Opcional: id del vídeo (p. ej. 001-suficiente). Vacío = los próximos del calendario"
+        required: false
+        default: ""
+      max:
+        description: "Máximo de imágenes nuevas en esta pasada"
+        required: false
+        default: "160"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: imagenes
+  cancel-in-progress: false
+
+jobs:
+  imagenes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      IMG_PROVIDER: ${{ vars.IMG_PROVIDER }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar
+        run: |
+          npm install --no-audit --no-fund
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+      - name: Generar lo que falta
+        run: |
+          set -euo pipefail
+          if [ -z "$CF_API_TOKEN" ] && [ -z "$GEMINI_API_KEY" ] && [ -z "$IMG_PROVIDER" ]; then
+            echo "::error::No hay proveedor de imágenes: guarda CF_ACCOUNT_ID y CF_API_TOKEN en Settings → Secrets and variables → Actions"; exit 1
+          fi
+          LEFT="${{ inputs.max || '160' }}"
+          IDS="${{ inputs.video }}"; [ -n "$IDS" ] || IDS=$(node src/upcoming.mjs 21)
+          for ID in $IDS; do
+            [ "$LEFT" -gt 0 ] || break
+            TAG="img-$ID"; DIR="out/$ID/img"; mkdir -p "$DIR"
+            gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "Imágenes · $ID" --notes "Imágenes generadas para el vídeo $ID. Las usa el workflow Publicar." --prerelease
+            gh release download "$TAG" -D "$DIR" --skip-existing || true
+            ls "$DIR" | sort > before.txt
+            node src/images.mjs "content/videos/$ID" "$DIR" "$LEFT" | tee log.txt
+            ls "$DIR" | sort > after.txt
+            NEW=$(comm -13 before.txt after.txt | grep '\.jpg$' || true)
+            [ -n "$NEW" ] && (cd "$DIR" && gh release upload "$TAG" $NEW --clobber)
+            (cd "$DIR" && gh release upload "$TAG" estado.json --clobber)
+            LEFT=$(( LEFT - $(echo "$NEW" | grep -c . || true) ))
+            echo "::notice::$ID → $(jq -r '"\(.have)/\(.total) imágenes"' "$DIR/estado.json")"
+            grep -q 'cupo del día agotado' log.txt && break || true
+          done

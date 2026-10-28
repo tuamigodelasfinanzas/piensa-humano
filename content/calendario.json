@@ -1,0 +1,4 @@
+{
+  "_doc": "Una fila por vídeo largo. El vídeo se renderiza el día anterior y Make lo sube en privado a las 17:00 (Madrid), programado para hacerse público a las 19:00 del día indicado. No se publica nada hasta que PUBLICAR = si en las variables del repo.",
+  "items": []
+}

@@ -15,6 +15,11 @@ const thumbPrompt = m => { const t = m.lado === 'derecha'; return ESTILO_M.promp
 if (meta.miniatura?.prompt && !fs.existsSync(path.join(videoDir, 'miniatura.jpg'))) plan.imgs.unshift({ file: 'miniatura.jpg', shot: -1, prompt: thumbPrompt(meta.miniatura), seed: 7 });
 const max = Number(maxArg || Infinity);
 fs.mkdirSync(outDir, { recursive: true });
+// imágenes generadas con el nombre antiguo (por posición del plano): se renombran al nombre por prompt
+const ren = path.join(videoDir, 'renombres.json');
+if (fs.existsSync(ren)) for (const [from, to] of Object.entries(JSON.parse(fs.readFileSync(ren, 'utf8')))) {
+  if (fs.existsSync(path.join(outDir, from)) && !fs.existsSync(path.join(outDir, to))) fs.renameSync(path.join(outDir, from), path.join(outDir, to));
+}
 const provider = process.env.IMG_PROVIDER || (process.env.CF_API_TOKEN ? 'cloudflare' : process.env.GEMINI_API_KEY ? 'gemini' : 'placeholder');
 const CF_MODEL = process.env.CF_MODEL || '@cf/black-forest-labs/flux-1-schnell';
 const GEMINI_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-lite-image';

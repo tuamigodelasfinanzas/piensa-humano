@@ -2,6 +2,7 @@
 // Uso como script: node src/parse.mjs content/videos/001-suficiente  -> imprime un resumen y las imágenes que hacen falta
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 
 export const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 export const ESTILO = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/estilo.json'), 'utf8'));
@@ -51,9 +52,10 @@ export function parse(dir) {
     s.est = s.parts.reduce((a, p) => a + (p.pause ?? estimate(p.text) + ESTILO.hueco_parrafo), 0);
     s.images = s.ref ? 0 : Math.max(1, Math.round(s.est / ESTILO.segundos_por_imagen));
   }
+  // el nombre de cada imagen sale de su prompt: añadir o quitar planos no descoloca las imágenes ya generadas
   const imgs = [];
   for (const s of shots) for (let v = 0; v < s.images; v++)
-    imgs.push({ file: `p${String(s.n).padStart(3, '0')}-${v}.jpg`, shot: s.n, prompt: fullPrompt(s.prompt, ESTILO.variantes[v % ESTILO.variantes.length]), seed: 1000 * s.n + v });
+    imgs.push({ file: `p${createHash('sha1').update(s.prompt).digest('hex').slice(0, 10)}-${v}.jpg`, shot: s.n, prompt: fullPrompt(s.prompt, ESTILO.variantes[v % ESTILO.variantes.length]), seed: 1000 * s.n + v });
   return { id: front.id || path.basename(dir), front, acts, shots, imgs, named };
 }
 

@@ -332,6 +332,22 @@ Hay deseos naturales pero no necesarios: comer bien en vez de solo comer, una ca
 
 Y hay deseos vanos, que nacen de la opinión: la fama, el poder, la riqueza sin límite, ser admirado. Esos no tienen fondo. Nunca se calman, porque no responden a ninguna necesidad del cuerpo, sino a una idea.
 
+> img: a kitchen table at night with a phone, a set of car keys and a travel brochure laid side by side, single lamp | right
+
+Prueba a llevar esa clasificación a tu semana.
+
+Tener un teléfono que funcione es casi necesario hoy: con él trabajas, hablas con tu familia, pagas. Cambiarlo por el modelo de este año, cuando el tuyo funciona bien, ya es otra cosa. Y cambiarlo para que se vea en la foto, para no quedarte atrás, para que alguien lo note, entra de lleno en la tercera categoría.
+
+> img: a person packing a small backpack on a bed, a window with mountains in the background, morning light | in
+
+Con los viajes pasa lo mismo. Descansar, ver otros lugares, salir de la rutina, es un deseo natural. Pero si el viaje se elige por la foto que vas a subir, o porque todo el mundo ha ido ya, el deseo ha cambiado de dueño sin avisar.
+
+Y con el trabajo. Querer un sueldo que te deje vivir tranquilo tiene un techo bastante claro. Querer ganar más que tu antiguo compañero de clase no lo tiene. Porque él también seguirá avanzando.
+
+> img: two empty chairs facing each other in a sunny courtyard, a small table with two glasses between them | left
+
+Fíjate en una cosa. Epicuro coloca a los amigos entre lo necesario. No el reconocimiento, no la admiración de muchos: unos pocos amigos de verdad. Es justo lo que suele quedar en último lugar cuando la agenda se llena de todo lo demás.
+
 [PAUSA]
 
 > img: =ninos | out
@@ -421,6 +437,29 @@ Así que la próxima vez que sientas ese pequeño tirón, el de lo siguiente, pr
 ¿Este deseo es mío?
 
 [PAUSA]
+
+> img: three small notes pinned on a cork board, blank paper, soft side light | right
+
+Si quieres hacerla más concreta, puedes partirla en tres.
+
+¿Lo seguiría queriendo si nadie pudiera verlo?
+
+¿Lo querría si no lo hubiera visto hoy en una pantalla?
+
+¿Me importará dentro de un año?
+
+> img: a hand writing in a small notebook at a wooden desk, morning light, coffee next to it | in
+
+No hace falta acertar siempre. Basta con hacerse la pregunta. En el espacio que abre esa pregunta, aunque sea de unos segundos, vuelve la pausa que la máquina nos ha quitado. Y en esa pausa, por fin, puedes elegir.
+
+Algunos deseos pasarán la prueba. Bien. Esos son tuyos, y merece la pena perseguirlos con todas tus fuerzas.
+
+Otros se desharán en cuanto los mires de frente. Y eso, aunque no lo parezca, también es un alivio.
+
+> img: an open window with a curtain moving in the wind, a quiet room, late afternoon light | out
+
+Si te apetece, cuéntame en los comentarios qué deseo tuyo no pasaría la prueba. Leerlo en otros ayuda a verlo en uno mismo.
+
 
 > img: wide shot of the apartment landing, the door slowly closing, fading to black | out
 

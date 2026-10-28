@@ -6,8 +6,8 @@ Ensayos de filosofía en vídeo, de unos 30-35 minutos, generados y publicados d
 |---|---|
 | Voz con edge-tts y mezclador con ducking (`src/voice.mjs`, `tools/mix.py`) | ZERO |
 | Música original hecha con numpy (`tools/musica.py`) | ZERO (`tools/make_audio.py`) |
-| Cola `queue/<fecha>.json` en GitHub Pages + Make que sube en privado y programa la publicación | ZERO |
-| Release de GitHub para el vídeo (los vídeos largos pasan de los 100 MB que admite Pages) | nuevo |
+| Aviso por Telegram (secrets `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID`, como en los otros canales) | ZERO |
+| Release de GitHub con el vídeo y su ficha de publicación (los vídeos largos pasan de los 100 MB de Pages y de Make Core) | nuevo |
 | Imágenes con IA (Cloudflare Workers AI, gratis) y animación con zoom y paneo en ffmpeg | nuevo |
 
 ## Cómo funciona
@@ -16,8 +16,8 @@ Ensayos de filosofía en vídeo, de unos 30-35 minutos, generados y publicados d
 2. **Estilo** fijo del canal en `content/estilo.json`: voz, ritmo, prompt base de las imágenes y volumen de la música.
 3. **Imágenes** (`.github/workflows/imagenes.yml`, cada día a las 05:00 UTC): genera las que faltan de los próximos vídeos, unas 160 al día, y las guarda en la release `img-<id>`. Cada plano largo se divide en varias imágenes, una cada ~10 segundos.
 4. **Calendario** en `content/calendario.json`: una fila `{ "date": "2026-11-08", "video": "001-suficiente" }` por vídeo. Los vídeos largos salen los domingos a las 19:00 (Madrid).
-5. **Publicar** (`.github/workflows/publicar.yml`, cada día a las 08:00 UTC): renderiza lo que se publica hoy o mañana (`src/render.mjs`), sube `video.mp4`, `miniatura.jpg` y `subtitulos.srt` a la release `v-<fecha>-<id>` y escribe `queue/<fecha>.json` en GitHub Pages. **No publica nada** hasta que la variable `PUBLICAR` sea `si`.
-6. **Make** ("HUMANO · Subir a YouTube programado") a las 17:00 (Madrid) lee `queue/<mañana>.json`, descarga el vídeo y lo sube a YouTube en privado, programado para las 19:00 del día siguiente, con su miniatura. Quedan unas 26 horas para revisarlo en YouTube Studio.
+5. **Publicar** (`.github/workflows/publicar.yml`, cada día a las 08:00 UTC): renderiza lo que se publica en los próximos 2 días (`src/render.mjs`), así que el vídeo del domingo está listo el viernes. Crea la release `v-<fecha>-<id>` con `video.mp4`, `miniatura.jpg`, `subtitulos.srt` y la **ficha de publicación** (`src/meta.mjs`: título, descripción con capítulos, etiquetas y los pasos) y avisa por Telegram.
+6. **Subida a mano** a YouTube Studio siguiendo la ficha, programada para el domingo a las 19:00 (unos 5 minutos). Make Core no admite archivos de más de 100 MB y un vídeo de 30 minutos ocupa unos 250-300 MB; subir desde GitHub con la API de YouTube exige que Google verifique la app (si no, los vídeos quedan bloqueados en privado). El escenario de Make "HUMANO · Subir a YouTube programado" está creado pero apagado, por si algún día se usa con un plan mayor.
 
 ## Puesta en marcha (una vez)
 
@@ -25,8 +25,8 @@ En **Settings → Secrets and variables → Actions** de este repo:
 
 - Secrets **`CF_ACCOUNT_ID`** y **`CF_API_TOKEN`**: cuenta gratuita de Cloudflare → *AI* → *Workers AI* → *Use REST API*: ahí está el Account ID y el botón para crear un token con permiso *Workers AI*.
 - (Opcional) Secret **`GEMINI_API_KEY`** y variable **`IMG_PROVIDER = gemini`** si algún día se prefiere Gemini (de pago, ~0,02 € por imagen en lote).
-- Variable **`PUBLICAR = si`** cuando el primer vídeo esté aprobado.
-- (Opcional) Variable **`PH_MAXRATE`** (por ejemplo `900k`) para limitar el tamaño del vídeo si el plan de Make no admite archivos grandes (Core: 100 MB, Pro: 250 MB).
+- (Opcional) Secrets **`TELEGRAM_BOT_TOKEN`** y **`TELEGRAM_CHAT_ID`** para recibir el aviso de "listo para subir" (pueden ser los del centro de mando).
+- (Opcional) Variable **`PH_MAXRATE`** (por ejemplo `900k`) para limitar el tamaño del vídeo.
 
 ## En local
 
@@ -38,7 +38,7 @@ PH_VOICE=false PH_ONLY=0 node src/render.mjs content/videos/001-suficiente out/0
 node src/thumb.mjs content/videos/001-suficiente out/001/img out/prueba/miniatura.jpg
 ```
 
-`PH_VOICE=false` renderiza sin voz (duraciones estimadas) cuando no hay acceso al servicio de voz. Desde **Actions → Publicar → Run workflow → preview** se puede renderizar cualquier vídeo como vista previa descargable, con voz, sin publicar nada.
+`PH_VOICE=false` renderiza sin voz (duraciones estimadas) cuando no hay acceso al servicio de voz. Desde **Actions → Publicar → Run workflow → preview** se puede renderizar cualquier vídeo como vista previa con voz (release `preview-<id>`).
 
 ## Estructura
 
@@ -46,6 +46,6 @@ node src/thumb.mjs content/videos/001-suficiente out/001/img out/prueba/miniatur
 content/estilo.json        voz, ritmo, prompt base, música
 content/calendario.json    qué vídeo sale cada domingo
 content/videos/<id>/       guion.md + video.json
-src/                       parse, images, voice, render, thumb, meta, queue, upcoming
+src/                       parse, images, voice, render, thumb, meta (ficha), queue, upcoming
 tools/                     mix.py (mezcla con ducking), musica.py (música original)
 ```

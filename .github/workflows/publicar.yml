@@ -1,9 +1,9 @@
 name: Publicar
 
-# Cada día a las 08:00 UTC renderiza lo que content/calendario.json publica hoy o mañana (hora de Madrid), sube el vídeo, la miniatura y los
-# subtítulos a la release v-<fecha>-<id> y escribe queue/<fecha>.json en GitHub Pages. A las 17:00 (Madrid) del día anterior, Make lo sube a
-# YouTube en privado, programado para hacerse público a las 19:00 de su fecha: hay unas 26 horas para revisarlo en YouTube Studio.
-# No se publica nada mientras la variable PUBLICAR no sea "si".
+# Cada día a las 08:00 UTC renderiza lo que content/calendario.json publica en los próximos 2 días (hora de Madrid): el vídeo del domingo
+# queda listo el viernes. Crea la release v-<fecha>-<id> con video.mp4, miniatura.jpg, subtitulos.srt y la ficha de publicación
+# (título, descripción con capítulos, etiquetas y pasos) como texto de la release, y avisa por Telegram si hay secrets TELEGRAM_*.
+# La subida a YouTube es a mano (Make Core no admite archivos de más de 100 MB): unos 5 minutos siguiendo la ficha.
 on:
   schedule:
     - cron: "0 8 * * *"
@@ -14,13 +14,12 @@ on:
         required: false
         default: ""
       preview:
-        description: "Opcional: id de un vídeo para renderizarlo solo como vista previa descargable (no se publica nada)"
+        description: "Opcional: id de un vídeo para renderizarlo como vista previa (release preview-<id>; las imágenes que falten salen como fondos)"
         required: false
         default: ""
 
 permissions:
   contents: write
-  pages: write
 
 concurrency:
   group: publicar
@@ -34,6 +33,8 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       PH_PRESET: medium
       PH_MAXRATE: ${{ vars.PH_MAXRATE }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -46,60 +47,46 @@ jobs:
           pip install -q edge-tts numpy
           python3 tools/musica.py
 
-      - name: Vista previa
-        if: inputs.preview != ''
+      - name: Qué toca
+        id: rows
         run: |
           set -euo pipefail
-          ID="${{ inputs.preview }}"; DIR="out/$ID/img"; mkdir -p "$DIR"
-          gh release download "img-$ID" -D "$DIR" --skip-existing || echo "::warning::todavía no hay imágenes generadas"
-          IMG_PROVIDER=placeholder node src/images.mjs "content/videos/$ID" "$DIR"   # rellena con fondos lo que falte
-          node src/render.mjs "content/videos/$ID" "$DIR" "out/preview"
-          node src/thumb.mjs "content/videos/$ID" "$DIR" "out/preview/miniatura.jpg"
-      - uses: actions/upload-artifact@v4
-        if: inputs.preview != ''
-        with:
-          name: vista-previa
-          path: |
-            out/preview/video.mp4
-            out/preview/miniatura.jpg
-            out/preview/subtitulos.srt
-            out/preview/render.json
+          if [ -n "${{ inputs.preview }}" ]; then
+            echo "rows=[{\"date\":\"preview\",\"video\":\"${{ inputs.preview }}\"}]" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          # ya hecho = ya existe su release con el vídeo
+          gh api "repos/${{ github.repository }}/releases?per_page=100" --jq '[.[] | select(.tag_name|startswith("v-")) | select(any(.assets[]; .name=="video.mp4")) | {key: (.tag_name[2:12] + "|" + .tag_name[13:]), value: 1}] | from_entries' > hechos.json
+          echo "rows=$(node src/queue.mjs hechos.json "${{ inputs.date }}")" >> "$GITHUB_OUTPUT"
 
-      - name: Rama del sitio (cola + estado)
-        if: inputs.preview == ''
-        run: |
-          git config --global user.name "humano-bot"; git config --global user.email "humano-bot@users.noreply.github.com"
-          REMOTE="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
-          if git ls-remote --exit-code --heads "$REMOTE" gh-pages >/dev/null 2>&1; then git clone -q --depth 1 --branch gh-pages "$REMOTE" site
-          else mkdir site && cd site && git init -q -b gh-pages && git remote add origin "$REMOTE" && touch .nojekyll && cd ..; fi
-          mkdir -p site/state site/queue
-          [ -f site/state/rendered.json ] || echo '{}' > site/state/rendered.json
-          curl -sS -o /dev/null -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/pages" -d '{"source":{"branch":"gh-pages","path":"/"}}' || true
-
-      - name: Renderizar lo que toca
-        if: inputs.preview == ''
+      - name: Renderizar
         run: |
           set -euo pipefail
-          if [ "${{ vars.PUBLICAR }}" != "si" ] && [ -z "${{ inputs.date }}" ]; then echo "::notice::PUBLICAR no es 'si': no se publica nada"; exit 0; fi
-          ROWS=$(node src/queue.mjs site/state/rendered.json "${{ inputs.date }}")
+          ROWS='${{ steps.rows.outputs.rows }}'
           echo "Toca: $ROWS"
+          tg() { [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ] && curl -sS -o /dev/null -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+                   --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" --data-urlencode "text=$1" --data-urlencode "disable_web_page_preview=true" || true; }
           for row in $(echo "$ROWS" | jq -c '.[]'); do
             DATE=$(echo "$row" | jq -r .date); ID=$(echo "$row" | jq -r .video)
-            DIR="out/$ID/img"; OUT="out/$DATE-$ID"; TAG="v-$DATE-$ID"; mkdir -p "$DIR"
+            DIR="out/$ID/img"; OUT="out/$DATE-$ID"; mkdir -p "$DIR"
+            if [ "$DATE" = preview ]; then TAG="preview-$ID"; else TAG="v-$DATE-$ID"; fi
             gh release download "img-$ID" -D "$DIR" --skip-existing || true
-            node src/images.mjs "content/videos/$ID" "$DIR" 0 | tail -1
-            if [ "$(jq -r .complete "$DIR/estado.json")" != "true" ]; then
-              echo "::error::$ID no tiene todas sus imágenes ($(jq -r '"\(.have)/\(.total)"' "$DIR/estado.json")). Lanza el workflow Imágenes."; exit 1
+            if [ "$DATE" = preview ]; then
+              IMG_PROVIDER=placeholder node src/images.mjs "content/videos/$ID" "$DIR" | tail -1
+            else
+              node src/images.mjs "content/videos/$ID" "$DIR" 0 | tail -1
+              if [ "$(jq -r .complete "$DIR/estado.json")" != "true" ]; then
+                MSG="HUMANO: $ID ($DATE) no tiene todas sus imágenes ($(jq -r '"\(.have)/\(.total)"' "$DIR/estado.json")). Lanza el workflow Imágenes."
+                tg "$MSG"; echo "::error::$MSG"; exit 1
+              fi
             fi
             node src/render.mjs "content/videos/$ID" "$DIR" "$OUT"
             node src/thumb.mjs "content/videos/$ID" "$DIR" "$OUT/miniatura.jpg"
-            gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$DATE · $(jq -r .titulo content/videos/$ID/video.json)" --notes "Vídeo listo para que Make lo suba a YouTube." --prerelease
-            gh release upload "$TAG" "$OUT/video.mp4" "$OUT/miniatura.jpg" "$OUT/subtitulos.srt" "$OUT/render.json" --clobber
-            node src/meta.mjs "content/videos/$ID" "$OUT" "$DATE" "https://github.com/${{ github.repository }}/releases/download/$TAG" "site/queue/$DATE.json"
-            jq --arg k "$DATE|$ID" '.[$k] = now' site/state/rendered.json > s.tmp && mv s.tmp site/state/rendered.json
-            (cd site && git add -A && { git diff --cached --quiet || git commit -q -m "Cola $DATE $ID"; }
-             for i in 1 2 3 4 5; do git push -q origin gh-pages && exit 0 || { git pull -q --rebase origin gh-pages; sleep $((i * 5)); }; done
-             echo "::error::no se pudo subir la cola de $DATE"; exit 1)
-            echo "::notice::$DATE $ID listo ($(jq -r '"\(.duration_min) min, \(.size_mb) MB"' site/queue/$DATE.json))"
+            URL="https://github.com/${{ github.repository }}/releases/download/$TAG"
+            node src/meta.mjs "content/videos/$ID" "$OUT" "${DATE/preview/$(date +%F)}" "$URL" "$OUT/ficha.md"
+            gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$DATE · $(jq -r .titulo content/videos/$ID/video.json)" --notes-file "$OUT/ficha.md" --prerelease
+            gh release edit "$TAG" --notes-file "$OUT/ficha.md"
+            gh release upload "$TAG" "$OUT/video.mp4" "$OUT/miniatura.jpg" "$OUT/subtitulos.srt" "$OUT/ficha.md" "$OUT/render.json" --clobber
+            PAGE="https://github.com/${{ github.repository }}/releases/tag/$TAG"
+            tg "HUMANO: listo para subir a YouTube → $(jq -r .titulo content/videos/$ID/video.json) ($DATE, $(jq -r '"\(.duration/60|floor) min"' "$OUT/render.json")). Ficha y archivos: $PAGE"
+            echo "::notice::$TAG listo → $PAGE"
           done

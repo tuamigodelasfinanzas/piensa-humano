@@ -4,13 +4,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { parse, fullPrompt } from './parse.mjs';
+import { parse, fullPrompt, ROOT } from './parse.mjs';
+const ESTILO_M = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/estilo.json'), 'utf8')).miniatura;
 
 const [videoDir, outDir, maxArg] = process.argv.slice(2);
 const plan = parse(path.resolve(videoDir));
 // la miniatura va primero: es lo que más importa si el cupo del día no llega para todo
 const meta = JSON.parse(fs.readFileSync(path.join(videoDir, 'video.json'), 'utf8'));
-if (meta.miniatura?.prompt) plan.imgs.unshift({ file: 'miniatura.jpg', shot: -1, prompt: fullPrompt(meta.miniatura.prompt), seed: 7 });
+const thumbPrompt = m => { const t = m.lado === 'derecha'; return ESTILO_M.prompt.replace('{escena}', m.prompt).replace('{lado_escena}', t ? 'left' : 'right').replace('{lado_texto}', t ? 'right' : 'left'); };
+if (meta.miniatura?.prompt && !fs.existsSync(path.join(videoDir, 'miniatura.jpg'))) plan.imgs.unshift({ file: 'miniatura.jpg', shot: -1, prompt: thumbPrompt(meta.miniatura), seed: 7 });
 const max = Number(maxArg || Infinity);
 fs.mkdirSync(outDir, { recursive: true });
 const provider = process.env.IMG_PROVIDER || (process.env.CF_API_TOKEN ? 'cloudflare' : process.env.GEMINI_API_KEY ? 'gemini' : 'placeholder');

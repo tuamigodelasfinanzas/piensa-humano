@@ -1,11 +1,11 @@
 name: Imágenes
 
-# Cada día a las 05:00 UTC genera las imágenes que faltan de los próximos vídeos del calendario (o del piloto si el calendario está vacío)
+# Cada día a las 00:10 UTC (justo después de que se renueve el cupo gratuito de Cloudflare) genera las imágenes que faltan de los próximos vídeos del calendario (o del piloto si el calendario está vacío)
 # y las guarda en la release img-<id> de este repo. Con Cloudflare Workers AI (gratis) caben unas 160 al día: un vídeo de ~120 imágenes
 # queda listo en uno o dos días. Secrets: CF_ACCOUNT_ID + CF_API_TOKEN (o GEMINI_API_KEY, de pago). Variable opcional: IMG_PROVIDER.
 on:
   schedule:
-    - cron: "0 5 * * *"
+    - cron: "10 0 * * *"
   workflow_dispatch:
     inputs:
       video:
